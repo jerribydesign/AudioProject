@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct SoundButton: View {
     // MARK: - Properties
@@ -16,6 +17,13 @@ struct SoundButton: View {
     let onDoubleTap: () -> Void
     
     @State private var isPressed: Bool = false
+    
+    // MARK: - Haptic Feedback
+    private func triggerHaptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
+        let generator = UIImpactFeedbackGenerator(style: style)
+        generator.prepare()
+        generator.impactOccurred()
+    }
     
     // MARK: - Computed Properties
     private var baseColor: Color {
@@ -30,7 +38,10 @@ struct SoundButton: View {
     
     // MARK: - Body
     var body: some View {
-        Button(action: onTap) {
+        Button(action: {
+            triggerHaptic(.light)
+            onTap()
+        }) {
             VStack(spacing: 8) {
                 Text(clip.title)
                     .font(.headline)
@@ -57,11 +68,17 @@ struct SoundButton: View {
         }
         .simultaneousGesture(
             LongPressGesture(minimumDuration: AudioConfig.longPressDuration)
-                .onEnded { _ in onLongPress() }
+                .onEnded { _ in
+                    triggerHaptic(.medium)
+                    onLongPress()
+                }
         )
         .simultaneousGesture(
             TapGesture(count: 2)
-                .onEnded { onDoubleTap() }
+                .onEnded {
+                    triggerHaptic(.heavy)
+                    onDoubleTap()
+                }
         )
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? AudioConfig.buttonPressScale : 1.0)

@@ -10,6 +10,14 @@ import SwiftUI
 struct ContentView: View {
     // MARK: - Properties
     @StateObject private var audioManager = AudioManager()
+    @State private var showOnboarding: Bool = false
+    
+    // MARK: - Initialization
+    init() {
+        // Check if onboarding has been shown before
+        let hasSeenOnboarding = UserDefaults.standard.bool(forKey: "hasSeenOnboarding")
+        _showOnboarding = State(initialValue: !hasSeenOnboarding)
+    }
     
     // MARK: - Computed Properties
     private var gridColumns: [GridItem] {
@@ -36,11 +44,6 @@ struct ContentView: View {
             }
             .navigationTitle("Daft Punk Pad")
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Verify") {
-                        SoundVerification.verifyAllSounds()
-                    }
-                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
                         Button("Debug Work It") {
@@ -56,6 +59,9 @@ struct ContentView: View {
                     }
                 }
             }
+        }
+        .fullScreenCover(isPresented: $showOnboarding) {
+            OnboardingView(isPresented: $showOnboarding)
         }
     }
 }
